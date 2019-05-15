@@ -39,7 +39,11 @@
 
             foreach (string varName in envVars)
             {
+#if NETSTANDARD1_6
                 this.CheckedValues.TryAdd(varName, Environment.GetEnvironmentVariable(varName));
+#else
+                this.CheckedValues.TryAdd(varName, Environment.GetEnvironmentVariable(varName, EnvironmentVariableTarget.Machine));
+#endif
             }
 
             this.environmentCheckTimer = new Timer(this.CheckVariablesIntermittent, null, Timeout.Infinite, Timeout.Infinite);
@@ -53,7 +57,12 @@
         /// <param name="value">Current cached value of the environment variable.</param>
         public void GetCurrentEnvironmentVariableValue(string envVarName, ref string value)
         {
+#if NETSTANDARD1_6
             value = this.CheckedValues.GetOrAdd(envVarName, (key) => { return Environment.GetEnvironmentVariable(key); });
+#else
+            value = this.CheckedValues.GetOrAdd(envVarName, (key) => { return Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Machine); });
+#endif
+
         }
 
         public void Dispose()
@@ -87,7 +96,11 @@
 
                     try
                     {
+#if NETSTANDARD1_6
                         envValue = Environment.GetEnvironmentVariable(kvp.Key);
+#else
+                        envValue = Environment.GetEnvironmentVariable(kvp.Key, EnvironmentVariableTarget.Machine);
+#endif
                     }
                     catch (SecurityException e)
                     {
